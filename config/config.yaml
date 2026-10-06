@@ -31,6 +31,9 @@ sources:
     start_date: "2013-09-13"
   openmeteo:
     enabled: true
+    http:                    # бесплатный API считает «вес» запроса по объёму данных и ограничивает его в минуту
+      min_interval_sec: 15
+      backoff_sec: 30        # пауза 30 → 60 → 120 с при ответе 429
     start_date: "2000-01-01"
     overlap_days: 10         # последние дни архива предварительные — перезапрашиваем
     variables: [temperature_2m_mean, precipitation_sum]
