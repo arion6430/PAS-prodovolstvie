@@ -43,6 +43,8 @@ seeds:
                       valid_from: date, valid_to: date, note: varchar}
     weather_points:
       +column_types: {point_id: varchar, name: varchar, lat: numeric, lon: numeric, region_id: varchar}
+    source_sla:
+      +column_types: {source: varchar, source_title: varchar, frequency: varchar, max_lag_days: int, description: varchar}
 
 snapshots:
   foodprices:

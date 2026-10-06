@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: mart_price_monthly
+    description: >
+      Предметная витрина: средняя потребительская цена товара в регионе по месяцам с изменениями к прошлому
+      месяцу и году, сезонной нормой (среднее того же месяца за 5 прошлых лет), ценой производителя,
+      курсом USD и ключевой ставкой.
+    meta: {dashboard: "Цены на плодоовощную продукцию"}
+    columns:
+      - name: price_rub_kg
+        description: "Средняя потребительская цена, руб/кг (ЕМИСС 31448)."
+      - name: dev_from_norm_pct
+        description: "Отклонение цены от сезонной нормы, %."
+      - name: retail_to_producer_ratio
+        description: "Во сколько раз розничная цена выше цены производителя."
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [product_id, region_id, period_month]}
+
+  - name: mart_price_latest
+    description: "Последний опубликованный месяц по каждому товару и региону."
+    meta: {dashboard: "Цены на плодоовощную продукцию"}
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [product_id, region_id]}
+
+  - name: mart_fx_sensitivity
+    description: "Корреляция годового изменения цены с изменением курса USD (РФ), сразу и с лагом 3 месяца."
+    meta: {dashboard: "Цены на плодоовощную продукцию"}
+    columns:
+      - name: product_id
+        data_tests: [unique]
+
+  - name: ops_source_freshness
+    description: "Свежесть данных и состояние загрузки по каждому источнику."
+    meta: {dashboard: "Операционный мониторинг"}
+    columns:
+      - name: source
+        data_tests: [unique]
+
+  - name: ops_load_log
+    description: "Журнал загрузок для операционного дашборда."
+    meta: {dashboard: "Операционный мониторинг"}
+    columns:
+      - name: load_id
+        data_tests: [unique]
+
+  - name: ops_data_quality
+    description: "Сводные показатели контроля качества данных."
+    meta: {dashboard: "Операционный мониторинг"}

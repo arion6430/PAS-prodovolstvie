@@ -38,14 +38,3 @@ sources:
     overlap_days: 10         # последние дни архива предварительные — перезапрашиваем
     variables: [temperature_2m_mean, precipitation_sum]
     # точки наблюдения — справочник dbt/seeds/weather_points.csv
-
-quality:
-  max_monthly_jump: 3.0      # цена не может измениться более чем в 3 раза за месяц
-  price_min_rub_kg: 1
-  price_max_rub_kg: 5000
-  freshness_days:            # допустимое отставание последних данных
-    emiss_retail: 75
-    emiss_producer: 100
-    cbr_fx: 7
-    cbr_key_rate: 120
-    openmeteo: 10
