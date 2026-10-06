@@ -37,7 +37,7 @@ seeds:
       +column_types: {source: varchar, source_code: varchar, source_name: varchar, product_id: varchar,
                       unit: varchar, to_rub_per_kg: numeric, valid_from: date, valid_to: date, note: varchar}
     regions:
-      +column_types: {region_id: varchar, name: varchar, level: varchar, sort_order: int}
+      +column_types: {region_id: varchar, name: varchar, short_name: varchar, level: varchar, sort_order: int}
     region_mapping:
       +column_types: {source_code: varchar, source_name: varchar, region_id: varchar,
                       valid_from: date, valid_to: date, note: varchar}

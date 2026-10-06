@@ -9,6 +9,7 @@
 Документация:
 * [Постановка задачи и анализ источников](docs/01_Постановка_задачи_и_данные.md)
 * [Обработка данных: слои, правила, разрешение сущностей, качество, историзация](docs/02_Обработка_данных.md)
+* [Аналитический модуль: витрины и дашборды, вопросы пользователя, происхождение показателя](docs/03_Дашборды.md)
 
 ## Архитектура
 
@@ -54,11 +55,22 @@
 
 ```bash
 cp .env.example .env          # при желании смените пароли
-docker compose up -d --build  # PostgreSQL + Airflow; первая сборка ~5 минут
+docker compose up -d --build  # PostgreSQL + Airflow + Superset; первая сборка ~10 минут
 ```
 
+После запуска DAG сразу выполняется один раз: загружает всю историю (около 5 минут) и строит витрины. Сервис `superset-bootstrap` ждёт появления витрин и создаёт дашборды.
+
 * Airflow: http://localhost:8080 (логин/пароль из `.env`, по умолчанию admin/admin). DAG `foodprices_pipeline` включён и запускается ежедневно в 06:00 МСК; запустить сразу — кнопка ▶ Trigger.
+* Superset: http://localhost:8088 (логин/пароль из `.env`, по умолчанию admin/admin). Дашборды:
+  * «Цены на плодоовощную продукцию» — http://localhost:8088/superset/dashboard/food-prices/
+  * «Операционный мониторинг конвейера данных» — http://localhost:8088/superset/dashboard/ops/
 * PostgreSQL доступен с хоста на порту `5433` (см. `.env`).
+
+Пересоздать или обновить дашборды после изменения `superset/bootstrap.py`:
+
+```bash
+docker compose run --rm superset-bootstrap
+```
 
 Преобразования dbt вручную (из контейнера Airflow):
 
@@ -88,7 +100,8 @@ airflow/dags/        DAG оркестрации
 config/config.yaml   параметры источников, HTTP, проверок качества
 dbt/                 проект dbt: staging, core, marts, снимки истории, тесты качества
 dbt/seeds/           мастер-справочники: товары, регионы, точки погоды, соответствие кодов источников
-docker/              Dockerfile Airflow, инициализация PostgreSQL
+docker/              Dockerfile Airflow и Superset, инициализация PostgreSQL
+superset/            дашборды как код (bootstrap.py)
 docs/                постановка задачи, описание данных
 sql/migrations/      DDL слоёв raw и meta
 src/foodprices/      загрузчики, журнал, CLI

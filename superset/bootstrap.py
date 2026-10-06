@@ -25,7 +25,7 @@ WAIT_TABLES_SEC = int(os.environ.get("SUPERSET_WAIT_TABLES_SEC", "1800"))
 # ---------- подписи колонок (verbose_name) ----------
 LABELS = {
     "product_name": "Товар", "category": "Группа товаров", "origin": "Происхождение", "region_name": "Регион",
-    "region_level": "Уровень", "period_month": "Месяц", "price_rub_kg": "Цена, руб/кг",
+    "region_short": "Регион (кратко)", "region_level": "Уровень", "period_month": "Месяц", "price_rub_kg": "Цена, руб/кг",
     "price_prev_month": "Цена месяц назад", "mom_pct": "За месяц, %", "price_prev_year": "Цена год назад",
     "yoy_pct": "За год, %", "seasonal_norm_rub_kg": "Сезонная норма, руб/кг",
     "dev_from_norm_pct": "Отклонение от нормы, %", "producer_price_rub_kg": "Цена производителя, руб/кг",
@@ -61,7 +61,7 @@ def time_filter(col: str) -> list[dict]:
 CHARTS = {
     # --- предметный дашборд ---
     "latest_table": ("mart_price_latest", "Сколько стоит товар сейчас и как изменилась цена?", "table", {
-        "query_mode": "raw",
+        "query_mode": "raw", "show_cell_bars": False,
         "all_columns": ["product_name", "period_month", "price_rub_kg", "mom_pct", "yoy_pct",
                         "seasonal_norm_rub_kg", "dev_from_norm_pct", "retail_to_producer_ratio"],
         "order_by_cols": [json.dumps(["dev_from_norm_pct", False])],
@@ -76,6 +76,7 @@ CHARTS = {
         "groupby": [], "orientation": "horizontal", "x_axis_sort": "Отклонение от нормы, %",
         "x_axis_sort_asc": True, "row_limit": 100, "show_legend": False, "show_value": True,
         "y_axis_format": "SMART_NUMBER",
+        "adhoc_filters": [{"clause": "WHERE", "expressionType": "SQL", "sqlExpression": "dev_from_norm_pct IS NOT NULL"}],
     }),
     "price_line": ("mart_price_monthly", "Как менялись цены?", "echarts_timeseries_line", {
         "x_axis": "period_month", "time_grain_sqla": "P1M",
@@ -99,11 +100,12 @@ CHARTS = {
         "show_legend": True, "rich_tooltip": True,
     }),
     "region_heatmap": ("mart_price_latest", "В каких регионах цены сильнее всего выше нормы?", "heatmap_v2", {
-        "x_axis": "region_name", "groupby": "product_name",
+        "x_axis": "region_short", "groupby": "product_name",
         "metric": metric("MAX(dev_from_norm_pct)", "Отклонение от нормы, %"),
         "linear_color_scheme": "superset_seq_1", "show_values": True, "show_legend": True,
         "normalize_across": "heatmap", "row_limit": 1000, "sort_x_axis": "alpha_asc", "sort_y_axis": "alpha_asc",
-        "value_bounds": [None, None], "y_axis_format": "SMART_NUMBER",
+        "value_bounds": [None, None], "y_axis_format": "SMART_NUMBER", "xscale_interval": 1, "yscale_interval": 1,
+        "adhoc_filters": [{"clause": "WHERE", "expressionType": "SQL", "sqlExpression": "dev_from_norm_pct IS NOT NULL"}],
     }),
     "fx_bar": ("mart_fx_sensitivity", "Какие товары подорожают, если ослабнет рубль?", "echarts_timeseries_bar", {
         "x_axis": "product_name",
@@ -114,12 +116,11 @@ CHARTS = {
     }),
     # --- операционный дашборд ---
     "freshness_table": ("ops_source_freshness", "Актуальны ли данные всех источников?", "table", {
-        "query_mode": "raw",
+        "query_mode": "raw", "show_cell_bars": False,
         "all_columns": ["source_title", "freshness_status", "last_data_date", "lag_days", "max_lag_days",
                         "last_ok_run_msk", "last_status", "problems_7d"],
         "order_by_cols": [], "row_limit": 100, "table_timestamp_format": "%d.%m.%Y %H:%M",
         "conditional_formatting": [
-            {"column": "lag_days", "operator": ">", "targetValue": 30, "colorScheme": "#FCC700"},
             {"column": "problems_7d", "operator": ">", "targetValue": 0, "colorScheme": "#E04355"},
         ],
     }),
@@ -135,7 +136,7 @@ CHARTS = {
         "show_legend": True, "rich_tooltip": True, "logAxis": True,
     }),
     "loads_table": ("ops_load_log", "Что произошло в последних запусках?", "table", {
-        "query_mode": "raw",
+        "query_mode": "raw", "show_cell_bars": False,
         "all_columns": ["started_msk", "source_title", "status", "trigger_type", "duration_sec",
                         "requests_failed", "rows_inserted", "rows_updated", "rows_unchanged",
                         "warnings_count", "error"],
@@ -146,7 +147,7 @@ CHARTS = {
         ],
     }),
     "dq_table": ("ops_data_quality", "Есть ли проблемы качества данных и как система их обработала?", "table", {
-        "query_mode": "raw", "all_columns": ["check_name", "check_type", "affected_rows", "system_action"],
+        "query_mode": "raw", "show_cell_bars": False, "all_columns": ["check_name", "check_type", "affected_rows", "system_action"],
         "order_by_cols": [], "row_limit": 100,
     }),
 }

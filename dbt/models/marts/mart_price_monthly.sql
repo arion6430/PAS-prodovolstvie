@@ -34,6 +34,7 @@ select
     p.origin,
     c.region_id,
     g.region_name,
+    g.region_short,
     g.region_level,
     g.sort_order                                                            as region_sort,
     c.period_month,
