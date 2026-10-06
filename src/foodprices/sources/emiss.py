@@ -6,7 +6,6 @@
 """
 from __future__ import annotations
 
-import csv
 import datetime as dt
 import logging
 import re
@@ -16,14 +15,12 @@ from typing import Iterable
 import pandas as pd
 import psycopg
 
-from ..settings import PROJECT_ROOT
-from .base import Payload, Request, SchemaChanged, Source, require_columns
+from .base import Payload, Request, SchemaChanged, Source, read_seed, require_columns
 
 log = logging.getLogger(__name__)
 
 BASE = "https://fedstat.ru"
 GENERIC = "{http://www.SDMX.org/resources/SDMXML/schemas/v1_0/generic}"
-SEEDS = PROJECT_ROOT / "dbt" / "seeds"
 
 
 class FedstatIndicator:
@@ -103,11 +100,6 @@ def parse_sdmx(content: bytes) -> pd.DataFrame:
 def strip_header(content: bytes) -> bytes:
     """Заголовок SDMX содержит ID и время формирования — для хеша его убираем."""
     return re.sub(rb"<Header.*?</Header>", b"", content, count=1, flags=re.S)
-
-
-def read_seed(name: str) -> list[dict[str, str]]:
-    with open(SEEDS / name, encoding="utf-8") as f:
-        return list(csv.DictReader(f))
 
 
 class EmissSource(Source):

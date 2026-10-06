@@ -1,0 +1,22 @@
+version: 2
+
+# Историзация (SCD2): Росстат уточняет ранее опубликованные цены. raw хранит только текущее значение,
+# а снимок — все версии с интервалом действия dbt_valid_from / dbt_valid_to.
+snapshots:
+  - name: snp_emiss_retail_prices
+    relation: source('raw', 'emiss_retail_prices')
+    description: "История значений розничных цен ЕМИСС 31448 (каждая ревизия — новая версия строки)."
+    config:
+      unique_key: [okato_code, good_code, year, period_name]
+      strategy: check
+      check_cols: [value]
+      hard_deletes: invalidate
+
+  - name: snp_emiss_producer_prices
+    relation: source('raw', 'emiss_producer_prices')
+    description: "История значений цен производителей ЕМИСС 57693."
+    config:
+      unique_key: [okato_code, okpd2_code, okei_code, year, period_name]
+      strategy: check
+      check_cols: [value]
+      hard_deletes: invalidate

@@ -1,0 +1,49 @@
+name: foodprices
+version: "1.0.0"
+config-version: 2
+profile: foodprices
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+# Ответственность слоёв:
+#   staging   — 1:1 с raw-таблицами: типы, единые названия колонок, отбор корректных периодов (представления)
+#   snapshots — история изменений значений источника (SCD2): ревизии Росстата не теряются
+#   core      — справочники (мастер-данные) и очищенные факты в единых ключах товар × регион × период
+#   marts     — витрины под вопросы пользователя и операционный мониторинг (читает Superset)
+models:
+  foodprices:
+    staging:
+      +schema: staging
+      +materialized: view
+    core:
+      +schema: core
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table
+
+seeds:
+  foodprices:
+    +schema: reference
+    products:
+      +column_types: {product_id: varchar, name: varchar, category: varchar, origin: varchar, description: varchar}
+    product_mapping:
+      +column_types: {source: varchar, source_code: varchar, source_name: varchar, product_id: varchar,
+                      unit: varchar, to_rub_per_kg: numeric, valid_from: date, valid_to: date, note: varchar}
+    regions:
+      +column_types: {region_id: varchar, name: varchar, level: varchar, sort_order: int}
+    region_mapping:
+      +column_types: {source_code: varchar, source_name: varchar, region_id: varchar,
+                      valid_from: date, valid_to: date, note: varchar}
+    weather_points:
+      +column_types: {point_id: varchar, name: varchar, lat: numeric, lon: numeric, region_id: varchar}
+
+snapshots:
+  foodprices:
+    +schema: snapshots

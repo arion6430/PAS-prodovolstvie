@@ -1,6 +1,7 @@
 """Общий интерфейс загрузчика источника."""
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass, field
 from typing import Any, Iterable
 
@@ -8,6 +9,9 @@ import pandas as pd
 import psycopg
 
 from ..http import HttpClient
+from ..settings import PROJECT_ROOT
+
+SEEDS = PROJECT_ROOT / "dbt" / "seeds"   # мастер-справочники общие для загрузчиков и dbt
 
 
 class SchemaChanged(RuntimeError):
@@ -53,3 +57,8 @@ def require_columns(df: pd.DataFrame, expected: Iterable[str], source: str) -> N
     missing = set(expected) - set(df.columns)
     if missing:
         raise SchemaChanged(f"{source}: в ответе нет полей {sorted(missing)}; есть {sorted(df.columns)}")
+
+
+def read_seed(name: str) -> list[dict[str, str]]:
+    with open(SEEDS / name, encoding="utf-8") as f:
+        return list(csv.DictReader(f))

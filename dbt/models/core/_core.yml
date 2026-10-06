@@ -1,0 +1,165 @@
+version: 2
+models:
+- name: dim_product
+  description: Мастер-справочник товаров (seed products.csv).
+  columns:
+  - name: product_id
+    data_tests:
+    - unique
+    - not_null
+  - name: origin
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - отечественный
+          - смешанный
+          - импортный
+- name: dim_region
+  description: 'Мастер-справочник регионов: РФ, федеральные округа, Москва, Санкт-Петербург.'
+  columns:
+  - name: region_id
+    data_tests:
+    - unique
+    - not_null
+- name: dim_weather_point
+  columns:
+  - name: point_id
+    data_tests:
+    - unique
+    - not_null
+  - name: region_id
+    data_tests:
+    - relationships:
+        arguments:
+          to: ref('dim_region')
+          field: region_id
+- name: map_product_code
+  description: Коды товаров в источниках → product_id, с периодом действия кода.
+  columns:
+  - name: product_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('dim_product')
+          field: product_id
+  - name: to_rub_per_kg
+    data_tests:
+    - not_null
+    - in_range:
+        arguments:
+          min_value: 1.0e-06
+  data_tests:
+  - unique_combination:
+      arguments:
+        columns:
+        - source
+        - source_code
+- name: map_region_code
+  description: Коды ОКАТО → region_id, с периодом действия (смены состава округов и ряда РФ).
+  columns:
+  - name: source_code
+    data_tests:
+    - unique
+    - not_null
+  - name: region_id
+    data_tests:
+    - not_null
+    - relationships:
+        arguments:
+          to: ref('dim_region')
+          field: region_id
+- name: fct_retail_price_monthly
+  description: Средняя потребительская цена, руб/кг; одна строка на товар × регион × месяц.
+  columns:
+  - name: product_id
+    data_tests:
+    - relationships:
+        arguments:
+          to: ref('dim_product')
+          field: product_id
+  - name: region_id
+    data_tests:
+    - relationships:
+        arguments:
+          to: ref('dim_region')
+          field: region_id
+  - name: price_rub_kg
+    data_tests:
+    - not_null
+    - in_range:
+        arguments:
+          min_value: 1
+          max_value: 5000
+  - name: code_in_validity
+    description: false — месяц вне объявленного периода действия кода; строка взята за неимением лучшей.
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - true
+          quote: false
+        config:
+          severity: warn
+  data_tests:
+  - unique_combination:
+      arguments:
+        columns:
+        - product_id
+        - region_id
+        - period_month
+- name: fct_producer_price_monthly
+  description: Средняя цена производителей, руб/кг; одна строка на товар × регион × месяц.
+  columns:
+  - name: product_id
+    data_tests:
+    - relationships:
+        arguments:
+          to: ref('dim_product')
+          field: product_id
+  - name: region_id
+    data_tests:
+    - relationships:
+        arguments:
+          to: ref('dim_region')
+          field: region_id
+  - name: price_rub_kg
+    data_tests:
+    - not_null
+    - in_range:
+        arguments:
+          min_value: 0.5
+          max_value: 2000
+  data_tests:
+  - unique_combination:
+      arguments:
+        columns:
+        - product_id
+        - region_id
+        - period_month
+- name: unmapped_source_codes
+  description: Коды источников без соответствия в мастер-справочниках (должно быть пусто).
+  data_tests:
+  - is_empty:
+      config:
+        severity: warn
+- name: fct_fx_daily
+  data_tests:
+  - unique_combination:
+      arguments:
+        columns:
+        - currency
+        - rate_date
+- name: fct_key_rate_daily
+  columns:
+  - name: rate_date
+    data_tests:
+    - unique
+- name: fct_weather_daily
+  data_tests:
+  - unique_combination:
+      arguments:
+        columns:
+        - point_id
+        - obs_date

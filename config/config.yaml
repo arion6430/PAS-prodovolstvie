@@ -37,13 +37,7 @@ sources:
     start_date: "2000-01-01"
     overlap_days: 10         # последние дни архива предварительные — перезапрашиваем
     variables: [temperature_2m_mean, precipitation_sum]
-    points:                  # крупные овощеводческие регионы
-      lipetsk:   {name: "Липецкая обл.",      lat: 52.60, lon: 39.60}
-      bryansk:   {name: "Брянская обл.",      lat: 53.24, lon: 34.37}
-      volgograd: {name: "Волгоградская обл.", lat: 48.71, lon: 44.51}
-      krasnodar: {name: "Краснодарский край", lat: 45.04, lon: 38.98}
-      moscow:    {name: "Московская обл.",    lat: 55.75, lon: 37.62}
-      dagestan:  {name: "Респ. Дагестан",     lat: 42.98, lon: 47.50}
+    # точки наблюдения — справочник dbt/seeds/weather_points.csv
 
 quality:
   max_monthly_jump: 3.0      # цена не может измениться более чем в 3 раза за месяц

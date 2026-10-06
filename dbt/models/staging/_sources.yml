@@ -1,0 +1,31 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Слой raw: данные источников «как есть» (значения — текст), заполняется загрузчиками на Python."
+    schema: raw
+    tables:
+      - name: emiss_retail_prices
+        description: "ЕМИСС, показатель 31448 «Средние потребительские цены (тарифы) на товары и услуги». SDMX-выгрузка с fedstat.ru."
+        meta: {url: "https://fedstat.ru/indicator/31448", loader: "foodprices.sources.emiss.EmissRetail"}
+      - name: emiss_producer_prices
+        description: "ЕМИСС, показатель 57693 «Средние цены производителей сельскохозяйственной продукции с 2017 г.»."
+        meta: {url: "https://fedstat.ru/indicator/57693", loader: "foodprices.sources.emiss.EmissProducer"}
+      - name: cbr_fx_rates
+        description: "Банк России, официальные курсы валют (XML_dynamic.asp)."
+        meta: {url: "https://www.cbr.ru/scripts/XML_dynamic.asp", loader: "foodprices.sources.cbr.CbrFx"}
+      - name: cbr_key_rate
+        description: "Банк России, ключевая ставка (HTML-таблица)."
+        meta: {url: "https://www.cbr.ru/hd_base/KeyRate/", loader: "foodprices.sources.cbr.CbrKeyRate"}
+      - name: openmeteo_daily
+        description: "Open-Meteo Historical Weather API, дневные значения в точках агрорегионов."
+        meta: {url: "https://archive-api.open-meteo.com/v1/archive", loader: "foodprices.sources.openmeteo.OpenMeteo"}
+
+  - name: meta
+    description: "Служебная схема: журнал загрузок и реестр сырых файлов."
+    schema: meta
+    tables:
+      - name: load_log
+        description: "Одна строка — один запуск загрузчика одного источника."
+      - name: raw_files
+        description: "Сырые ответы источников, сохранённые на диск (gzip, имя = SHA-256)."

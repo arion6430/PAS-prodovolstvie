@@ -1,0 +1,115 @@
+version: 2
+models:
+- name: stg_emiss__retail_prices
+  description: 'Розничные цены ЕМИСС 31448: период — первый день месяца, цена — numeric (руб. за единицу товара).'
+  columns:
+  - name: period_month
+    data_tests:
+    - not_null
+  - name: price
+    description: Цена, руб. Пустое значение в источнике — допустимо (нет наблюдения).
+    data_tests:
+    - parsed_as_number:
+        arguments:
+          raw_column: value_raw
+    - in_range:
+        arguments:
+          min_value: 0
+  data_tests:
+  - unique_combination:
+      arguments:
+        columns:
+        - okato_code
+        - good_code
+        - period_month
+- name: stg_emiss__producer_prices
+  description: Цены производителей ЕМИСС 57693, руб. за тонну, только месячные периоды.
+  columns:
+  - name: period_month
+    data_tests:
+    - not_null
+  - name: price
+    data_tests:
+    - parsed_as_number:
+        arguments:
+          raw_column: value_raw
+        config:
+          where: not coalesce(is_zero_placeholder, false)
+    - in_range:
+        arguments:
+          min_value: 0
+    description: Цена, руб/т. Нули источника (скрытые данные) переведены в null.
+  - name: is_zero_placeholder
+    description: В источнике стоял 0 — данных нет или они скрыты.
+    data_tests:
+    - accepted_values:
+        arguments:
+          values:
+          - false
+          quote: false
+        config:
+          severity: warn
+  data_tests:
+  - unique_combination:
+      arguments:
+        columns:
+        - okato_code
+        - okpd2_code
+        - period_month
+- name: stg_cbr__fx_rates
+  columns:
+  - name: currency
+    data_tests:
+    - not_null
+    - accepted_values:
+        arguments:
+          values:
+          - USD
+          - EUR
+          - CNY
+  - name: rub_per_unit
+    data_tests:
+    - not_null
+    - in_range:
+        arguments:
+          min_value: 0.01
+          max_value: 1000
+  data_tests:
+  - unique_combination:
+      arguments:
+        columns:
+        - currency
+        - rate_date
+- name: stg_cbr__key_rate
+  columns:
+  - name: rate_date
+    data_tests:
+    - unique
+    - not_null
+  - name: key_rate_pct
+    data_tests:
+    - not_null
+    - in_range:
+        arguments:
+          min_value: 0
+          max_value: 50
+- name: stg_openmeteo__daily
+  columns:
+  - name: temp_mean_c
+    data_tests:
+    - in_range:
+        arguments:
+          min_value: -60
+          max_value: 50
+  - name: precip_mm
+    data_tests:
+    - in_range:
+        arguments:
+          min_value: 0
+          max_value: 500
+  data_tests:
+  - unique_combination:
+      arguments:
+        columns:
+        - point_id
+        - obs_date

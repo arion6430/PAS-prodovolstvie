@@ -8,7 +8,7 @@ from typing import Iterable
 import pandas as pd
 import psycopg
 
-from .base import Payload, Request, SchemaChanged, Source
+from .base import Payload, Request, SchemaChanged, Source, read_seed
 
 
 class OpenMeteo(Source):
@@ -19,7 +19,8 @@ class OpenMeteo(Source):
 
     def plan(self, conn: psycopg.Connection) -> Iterable[Request]:
         today = dt.date.today()
-        for point_id, pt in self.cfg["points"].items():
+        for pt in read_seed("weather_points.csv"):
+            point_id = pt["point_id"]
             last = conn.execute("SELECT max(obs_date::date) FROM raw.openmeteo_daily WHERE point_id = %s",
                                 (point_id,)).fetchone()[0]
             # последние дни архива предварительные — перезапрашиваем их с перекрытием

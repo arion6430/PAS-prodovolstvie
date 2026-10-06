@@ -1,0 +1,7 @@
+point_id,name,lat,lon,region_id
+lipetsk,Липецкая обл.,52.60,39.60,CFD
+bryansk,Брянская обл.,53.24,34.37,CFD
+moscow,Московская обл.,55.75,37.62,CFD
+volgograd,Волгоградская обл.,48.71,44.51,SFD
+krasnodar,Краснодарский край,45.04,38.98,SFD
+dagestan,Респ. Дагестан,42.98,47.50,NCFD
